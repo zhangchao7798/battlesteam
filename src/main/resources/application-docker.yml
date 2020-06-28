@@ -1,0 +1,106 @@
+#server 端口号设置
+server:
+  port: 8080
+  undertow:
+    # 设置IO线程数, 它主要执行非阻塞的任务,它们会负责多个连接, 默认设置每个CPU核心一个线程
+    io-threads: 4
+    # 阻塞任务线程池, 当执行类似servlet请求阻塞操作, undertow会从这个线程池中取得线程,它的值设置取决于系统的负载
+    worker-threads: 20
+    # 以下的配置会影响buffer,这些buffer会用于服务器连接的IO操作,有点类似netty的池化内存管理
+    # 每块buffer的空间大小,越小的空间被利用越充分
+    buffer-size: 1024
+    # 是否分配的直接内存
+    direct-buffers: true
+spring:
+  application:
+    name: exam
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 200MB
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  #redis
+  # Redis数据库索引（默认为0）
+  redis:
+    # Redis服务器连接密码（默认为空）
+    password:
+    # 连接超时时间（毫秒）
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 8
+        max-wait: 5000ms
+        max-idle: 8
+        min-idle: 0
+    host: docker_redis
+    port: 6379
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://docker_mysql:3306/exam?serverTimezone=Asia/Shanghai&useSSL=false&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useOldAliasMetadataBehavior=true
+    username: root
+    password: 123
+    druid:
+      initialSize: 5
+      minIdle: 5
+      maxActive: 20
+      maxWait: 60000
+      timeBetweenEvictionRunsMillis: 60000
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      filters: stat,wall
+      maxPoolPreparedStatementPerConnectionSize: 20
+      connectionProperties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=500
+      useGlobalDataSourceStat: true
+#mybatis
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+  type-aliases-package: com.medical.exam.bean
+  configuration:
+    #全局映射器启用缓存
+    cacheEnabled: true
+    #查询时，关闭关联对象即时加载以提高性能
+    lazyLoadingEnabled: false
+    #设置关联对象加载的形态，此处为按需加载字段(加载字段由SQL指 定)，不会加载关联表的所有字段，以提高性能
+    aggressiveLazyLoading: false
+    #对于未知的SQL查询，允许返回不同的结果集以达到通用的效果
+    multipleResultSetsEnabled: true
+    #允许使用列标签代替列名
+    useColumnLabel: true
+    #允许使用自定义的主键值(比如由程序生成的UUID 32位编码作为键值)，数据表的PK生成策略将被覆盖
+    useGeneratedKeys: true
+    #给予被嵌套的resultMap以字段-属性的映射支持
+    autoMappingBehavior: FULL
+    #对于批量更新操作缓存SQL以提高性能
+    defaultExecutorType: SIMPLE
+    #数据库超过25000秒仍未响应则超时
+    defaultStatementTimeout: 25000
+    #驼峰设置
+    mapUnderscoreToCamelCase: true
+    #日志,注意这里,spring-boot默认使用的是log4j,不是log4j2,如果用logback输出日志,这里需要设置为STDOUT_LOGGING( org.apache.ibatis.logging.stdout.StdOutImpl)
+    #org.apache.ibatis.logging.log4j.Log4jImpl
+    logImpl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+#通用mapper设置,mappers 多个接口时逗号隔开
+mapper:
+  mappers: com.medical.exam.util.MyMapper
+  not-empty: false
+  identity: MYSQL
+#pagehelper
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+logging:
+  file: ./logs/${spring.application.name}.log
+  level:  # 日志级别
+    #root: WARN
+    #否则不打印mybatis的执行sql
+    com.medical.exam.dao: TRACE
